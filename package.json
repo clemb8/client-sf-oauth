@@ -1,0 +1,27 @@
+{
+  "name": "client-sf-oauth",
+  "version": "0.0.1",
+  "description": "A simple client to easily get a salesforce access token via oauth flows",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
+    "generate-changelog": "github-changes -n ${npm_package_version} --use-commit-body -o clemb8 -r client-sf-bulk2 -b main",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version": "npm run generate-changelog && git add CHANGELOG.md",
+    "postversion": "git push && git push --tags"
+  },
+  "author": "clemb8",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.8",
+    "typescript": "^4.7.4",
+    "tslint": "^6.1.3"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "jsonwebtoken": "^8.5.1"
+  }
+}
