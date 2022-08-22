@@ -1,7 +1,6 @@
-export interface JWTParameters {
-  privateKey: string,
-  clientId: string,
-  username: string,
+import { Parameters } from "./Parameters";
+
+export interface JWTParameters extends Parameters {
   expiration?: number,
   environment?: string
 }

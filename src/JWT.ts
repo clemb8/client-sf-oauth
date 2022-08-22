@@ -16,7 +16,7 @@ export default class JWT {
   constructor(parameters: JWTParameters) {
     this.iss = parameters.clientId;
     this.sub = parameters.username;
-    this.key = fs.readFileSync(parameters.privateKey, 'utf8');
+    this.key = fs.readFileSync(parameters.secret, 'utf8');
     !parameters.expiration ? this.exp = Math.floor(Date.now() / 1000) + (60 * 60) : this.exp = parameters.expiration;
     parameters.environment === 'dev' ? this.aud = 'https://test.salesforce.com' : this.aud = 'https://login.salesforce.com';
   }
@@ -43,7 +43,7 @@ export default class JWT {
     return axiosResponse;
   }
 
-  public async connect(passphrase?: string) : Promise<AxiosResponse> {
+  public async createJWTAndGetAccessToken(passphrase?: string) : Promise<AxiosResponse> {
     const jwt = this.createJWT(passphrase);
     return await this.requestAccessToken(jwt);
   }
