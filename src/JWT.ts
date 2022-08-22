@@ -43,8 +43,8 @@ export default class JWT {
     return axiosResponse;
   }
 
-  public async connect() : Promise<AxiosResponse> {
-    const jwt = this.createJWT();
+  public async connect(passphrase?: string) : Promise<AxiosResponse> {
+    const jwt = this.createJWT(passphrase);
     return await this.requestAccessToken(jwt);
   }
 
