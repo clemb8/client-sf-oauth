@@ -28,10 +28,13 @@ List the ready features here:
 - Easily get Salesforce API credentials through :
   - Oauth JWT Flow;
   - Oauth Username/Password Flow ;
+  - Oauth Web App integration Flow ;
 
 ## Usage
 
 Check the Salesforce documentation [here](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5).
+
+Some Examples :
 
 ```typescript
 
