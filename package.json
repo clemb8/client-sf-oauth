@@ -3,6 +3,15 @@
   "version": "0.2.1",
   "description": "A simple client to easily get a salesforce access token via oauth flows",
   "main": "dist/index.js",
+    "repository": {
+    "type": "git",
+    "url": "https://github.com/clemb8/client-sf-oauth"
+  },
+  "keywords": [
+    "salesforce",
+    "Oauth",
+    "salesforce-api"
+  ],
   "scripts": {
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
