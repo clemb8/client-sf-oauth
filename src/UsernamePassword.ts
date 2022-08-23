@@ -15,9 +15,9 @@ export default class UsernamePassword {
 
     const query = '?grant_type=password&'
       + `client_id=${this.parameters.clientId}`
-        + `&client_secret=${this.parameters.secret}`
-        + `&username=${this.parameters.username}`
-        + `&password=${this.parameters.password}${this.parameters.usertoken}`;
+      + `&client_secret=${this.parameters.clientSecret}`
+      + `&username=${this.parameters.username}`
+      + `&password=${this.parameters.password}${this.parameters.usertoken}`;
 
     const endpoint = `${this.parameters.host}${this.service}${query}`;
 

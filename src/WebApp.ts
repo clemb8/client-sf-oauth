@@ -1,33 +1,33 @@
 import axios, { AxiosResponse } from "axios";
-import { WebAppParameters } from "./interfaces/AuthCodeParameters";
+import { WebAppParameters } from "./interfaces/WebAppParameters";
+import { WebAuthCodeParameters } from "./interfaces/WebAuthCodeParameters";
+import { includeParametersQuery } from "./utils";
 
 export default class WebApp {
 
   private parameters: WebAppParameters;
 
-  constructor(parameters: WebAppParameters) {
+  constructor(parameters: WebAuthCodeParameters) {
     this.parameters = parameters;
   }
 
-  public async requestAuthCode() {
+  public async requestAuthCode(): Promise<string> {
+
 
     const query = `client_id=${this.parameters.clientId}&redirect_uri=${this.parameters.redirectURI}&response_type=code`;
     let endpoint = `${this.parameters.host}/services/oauth2/authorize?${query}`;
+    endpoint = includeParametersQuery(this.parameters, endpoint);
+    const response = await axios.get(endpoint);
 
-    return await axios.get(endpoint);
+    return response.request.res.responseUrl;
   }
 
   public async requestAccessTokenWithCode(code: string) {
-    let endpoint = `${this.parameters.host}/services/oauth2/token`;
 
-    const params = new URLSearchParams();
-    params.append('grant_type', 'authorization_code');
-    params.append('code', code);
-    params.append('client_id', this.parameters.clientId);
-    params.append('secret', this.parameters.secret);
-    params.append('redirect_uri', this.parameters.redirectURI);
+    const query = `grant_type=authorization_code&code=${code}&client_id=${this.parameters.clientId}&client_secret=${this.parameters.clientSecret}&redirect_uri=${this.parameters.redirectURI}`
+    const endpoint = `${this.parameters.host}/services/oauth2/token?${query}`;
 
-    const axiosResponse: AxiosResponse = await axios.post(endpoint, params);
+    const axiosResponse: AxiosResponse = await axios.post(endpoint);
     return axiosResponse;
   }
 }
