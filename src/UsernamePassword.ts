@@ -13,14 +13,13 @@ export default class UsernamePassword {
 
   public async requestAccessToken(): Promise<AxiosResponse> {
 
-    const query = '?grant_type=password&'
+    const query = `?grant_type=${this.grantType}`
       + `client_id=${this.parameters.clientId}`
       + `&client_secret=${this.parameters.clientSecret}`
       + `&username=${this.parameters.username}`
       + `&password=${this.parameters.password}${this.parameters.usertoken}`;
 
     const endpoint = `${this.parameters.host}${this.service}${query}`;
-
     const headers = { 'Content-Type': 'application/json' }
 
     const axiosResponse: AxiosResponse = await axios.post(endpoint, { headers });

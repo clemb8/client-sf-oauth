@@ -24,8 +24,7 @@ export default class JWT {
   public createJWT(passphrase?: string) : string {
 
     const claims = { iss: this.iss, sub: this.sub, aud: this.aud, exp: this.exp }
-    const options = { header: { "alg":"RS256"} }
-
+    const options = { header: { "alg":"RS256" } }
     let secret = null;
     passphrase ? secret = { key: this.key, passphrase } : secret = this.key;
 
@@ -33,12 +32,11 @@ export default class JWT {
   }
 
   public async requestAccessToken(jwt: string) : Promise<AxiosResponse> {
-    const endpoint = `${this.aud}/${this.service}`;
 
+    const endpoint = `${this.aud}/${this.service}`;
     const params = new URLSearchParams();
     params.append('grant_type', this.grantType);
     params.append('assertion', jwt);
-
     const axiosResponse: AxiosResponse = await axios.post(endpoint, params);
     return axiosResponse;
   }
