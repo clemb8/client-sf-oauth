@@ -13,16 +13,17 @@ export default class UsernamePassword {
 
   public async requestAccessToken(): Promise<AxiosResponse> {
 
-    const query = `?grant_type=${this.grantType}`
-      + `client_id=${this.parameters.clientId}`
-      + `&client_secret=${this.parameters.clientSecret}`
-      + `&username=${this.parameters.username}`
-      + `&password=${this.parameters.password}${this.parameters.usertoken}`;
+    const body = `${encodeURI('grant_type')}=${encodeURI(this.grantType)}&` +
+    `${encodeURI('client_id')}=${encodeURI(this.parameters.clientId)}&` +
+    `${encodeURI('client_secret')}=${encodeURI(this.parameters.clientSecret)}&` +
+    `${encodeURI('username')}=${encodeURI(this.parameters.username)}&` +
+    `${encodeURI('password')}=${encodeURI(this.parameters.password)}`;
 
-    const endpoint = `${this.parameters.host}${this.service}${query}`;
-    const headers = { 'Content-Type': 'application/json' }
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
 
-    const axiosResponse: AxiosResponse = await axios.post(endpoint, { headers });
+    const endpoint = `${this.parameters.host}${this.service}`;
+
+    const axiosResponse: AxiosResponse = await axios.post(endpoint, body, { headers });
     return axiosResponse;
   }
 

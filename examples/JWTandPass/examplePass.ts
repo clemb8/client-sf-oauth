@@ -4,7 +4,7 @@ async function PassConnect() {
 
   const PassParameters: PassParameters = {
     clientId: process.env.clientId,
-    secret: process.env.secret,
+    clientSecret: process.env.secret,
     username: process.env.username,
     password: process.env.password,
     usertoken: process.env.usertoken,
