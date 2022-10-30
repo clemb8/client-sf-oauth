@@ -69,7 +69,7 @@ async function PassConnect() {
 
   const PassParameters: PassParameters = {
     clientId: process.env.clientId,
-    secret: process.env.clientId,
+    secret: process.env.clientSecret,
     username: process.env.username,
     password: process.env.password,
     usertoken: process.env.usertoken,
@@ -91,4 +91,4 @@ PassConnect();
 
 ## Project Status
 
-Project is: _in progress_.
+Project is: _Done_.
