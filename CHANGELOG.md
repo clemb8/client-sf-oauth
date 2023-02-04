@@ -1,6 +1,7 @@
 ## Change Log
 
-### 0.3.0 (2023/02/04 16:17 +00:00)
+### 0.4.0 (2023/02/04 16:21 +00:00)
+- [8282330](https://github.com/clemb8/client-sf-oauth/commit/8282330d228b12df3f80ef8cd3c0377872a934e2) fix pass connection (@clemb8)
 - [f378521](https://github.com/clemb8/client-sf-oauth/commit/f378521a9287267bea51df578db764320bdc7b58) Fix typo readme (@clemb8)
 
 ### v0.3.0 (2022/08/31 20:08 +00:00)
