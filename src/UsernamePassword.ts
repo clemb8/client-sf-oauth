@@ -17,7 +17,7 @@ export default class UsernamePassword {
     `${encodeURI('client_id')}=${encodeURI(this.parameters.clientId)}&` +
     `${encodeURI('client_secret')}=${encodeURI(this.parameters.clientSecret)}&` +
     `${encodeURI('username')}=${encodeURI(this.parameters.username)}&` +
-    `${encodeURI('password')}=${encodeURI(this.parameters.password)}`;
+    `${encodeURI('password')}=${encodeURI(this.parameters.password) + encodeURI(this.parameters.usertoken)}`;
 
     const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
 
