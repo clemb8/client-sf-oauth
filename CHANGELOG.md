@@ -1,6 +1,7 @@
 ## Change Log
 
-### 0.4.2 (2023/11/09 17:10 +00:00)
+### 0.5.2 (2023/11/09 17:22 +00:00)
+- [419f4ce](https://github.com/clemb8/client-sf-oauth/commit/419f4ce0c48b7e5b008e38b0113c22e6c7d1e7ef) Publish new version (@clemb8)
 - [15b45cf](https://github.com/clemb8/client-sf-oauth/commit/15b45cf29af59ec2ff3088eebca9dacfb7905cf5) Fix interfaxces (@clemb8)
 
 ### v0.4.1 (2023/02/06 19:20 +00:00)

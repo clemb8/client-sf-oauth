@@ -16,7 +16,9 @@ export default class JWT {
   constructor(parameters: JWTParameters) {
     this.iss = parameters.clientId;
     this.sub = parameters.username;
-    this.key = fs.readFileSync(parameters.secret, 'utf8');
+    this.key = parameters.secretText ?
+      parameters.secret :
+      fs.readFileSync(parameters.secret, 'utf8');
     !parameters.expiration ? this.exp = Math.floor(Date.now() / 1000) + (60 * 60) : this.exp = parameters.expiration;
     parameters.environment === 'dev' ? this.aud = 'https://test.salesforce.com' : this.aud = 'https://login.salesforce.com';
   }
