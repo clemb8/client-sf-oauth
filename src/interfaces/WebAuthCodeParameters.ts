@@ -2,6 +2,7 @@ import { Parameters } from "./Parameters";
 import { WebAppParameters } from "./WebAppParameters";
 
 export interface WebAuthCodeParameters extends Parameters, WebAppParameters {
+  clientSecret: string,
   scope?: string,
   state?: string,
   immediate?: boolean,

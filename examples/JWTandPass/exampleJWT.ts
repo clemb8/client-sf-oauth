@@ -4,8 +4,8 @@ async function JWTConnect() {
 
   const JWTParameters: JWTParameters = {
     secret: './key.pem',
-    clientId: process.env.clientId,
-    username: process.env.username
+    clientId: process.env.clientId!,
+    username: process.env.username!
   };
   try {
     const connection = new SF_JWTConnect(JWTParameters);
