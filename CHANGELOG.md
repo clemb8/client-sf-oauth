@@ -1,5 +1,12 @@
 ## Change Log
 
+### 0.4.2 (2023/11/09 17:10 +00:00)
+- [15b45cf](https://github.com/clemb8/client-sf-oauth/commit/15b45cf29af59ec2ff3088eebca9dacfb7905cf5) Fix interfaxces (@clemb8)
+
+### v0.4.1 (2023/02/06 19:20 +00:00)
+- [ecae094](https://github.com/clemb8/client-sf-oauth/commit/ecae094bf5dca7c071817be85def74ca0a711095) 0.4.1 (@clemb8)
+- [f305675](https://github.com/clemb8/client-sf-oauth/commit/f305675e92cb50a317fb207f0df6290a45cd8429) Bump jsonwebtoken (@clemb8)
+
 ### v0.4.0 (2023/02/04 16:21 +00:00)
 - [94fdcca](https://github.com/clemb8/client-sf-oauth/commit/94fdcca772468706648236c5934ce13a819bef3a) 0.4.0 (@clemb8)
 - [8282330](https://github.com/clemb8/client-sf-oauth/commit/8282330d228b12df3f80ef8cd3c0377872a934e2) fix pass connection (@clemb8)
