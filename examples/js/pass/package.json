@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "client-sf-oauth": "^0.3.0"
+    "client-sf-oauth": "^0.5.2"
   }
 }
