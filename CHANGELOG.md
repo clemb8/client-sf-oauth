@@ -1,6 +1,15 @@
 ## Change Log
 
-### 0.5.2 (2023/11/09 17:22 +00:00)
+### 0.5.3 (2023/12/01 15:53 +00:00)
+- [#4](https://github.com/clemb8/client-sf-oauth/pull/4) Bump jsonwebtoken and client-sf-oauth in /examples/js/pass (@clemb8)
+- [#3](https://github.com/clemb8/client-sf-oauth/pull/3) Bump jsonwebtoken and client-sf-oauth in /examples/WebApp (@clemb8)
+- [#2](https://github.com/clemb8/client-sf-oauth/pull/2) Bump axios from 0.27.2 to 1.6.0 (@clemb8)
+- [#1](https://github.com/clemb8/client-sf-oauth/pull/1) Bump semver from 5.7.1 to 5.7.2 (@clemb8)
+- [1b827e1](https://github.com/clemb8/client-sf-oauth/commit/1b827e1eebcee2fdf35e5f6a7ff3e68303b69e8d) Bump jsonwebtoken and client-sf-oauth in /examples/WebApp (@dependabot[bot])
+- [35c1f29](https://github.com/clemb8/client-sf-oauth/commit/35c1f29e9348d9ebfcdac9fb747bbb4eb6b1f0f6) Bump jsonwebtoken and client-sf-oauth in /examples/js/pass (@dependabot[bot])
+- [c01e44d](https://github.com/clemb8/client-sf-oauth/commit/c01e44dcb15b0aa957152bb58051d0d3071dda38) Bump axios from 0.27.2 to 1.6.0 (@dependabot[bot])
+- [bd39bd2](https://github.com/clemb8/client-sf-oauth/commit/bd39bd21527fd74bd2eb307fe37c878e73363668) Bump semver from 5.7.1 to 5.7.2 (@dependabot[bot])
+- [0641dfb](https://github.com/clemb8/client-sf-oauth/commit/0641dfbf6a9f8365b1e34cc6b37a067ed9122788) Add secret option for JWT (@clemb8)
 - [419f4ce](https://github.com/clemb8/client-sf-oauth/commit/419f4ce0c48b7e5b008e38b0113c22e6c7d1e7ef) Publish new version (@clemb8)
 - [15b45cf](https://github.com/clemb8/client-sf-oauth/commit/15b45cf29af59ec2ff3088eebca9dacfb7905cf5) Fix interfaxces (@clemb8)
 
