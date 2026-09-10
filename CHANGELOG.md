@@ -1,6 +1,7 @@
 ## Change Log
 
-### 0.5.4 (2025/08/21 07:30 +00:00)
+### v0.5.4 (2025/08/21 07:30 +00:00)
+- [7e62656](https://github.com/clemb8/client-sf-oauth/commit/7e626562366536e91db8acd212e149e0b1766729) 0.5.4 (@clemb8)
 - [e99ac71](https://github.com/clemb8/client-sf-oauth/commit/e99ac718a33c1ff662a4fe453db9f2c81add5e1f) Patch Dependencies (@clemb8)
 - [#28](https://github.com/clemb8/client-sf-oauth/pull/28) Bump form-data from 4.0.0 to 4.0.4 (@clemb8)
 - [8ee2c74](https://github.com/clemb8/client-sf-oauth/commit/8ee2c74930704b888b2d3c928b7ad04f94fc96e8) Bump form-data from 4.0.0 to 4.0.4 (@dependabot[bot])
