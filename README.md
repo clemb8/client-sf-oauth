@@ -36,24 +36,30 @@ Check the Salesforce documentation [here](https://help.salesforce.com/s/articleV
 
 Some Examples :
 
+> **Never log a caught error object wholesale.** The library redacts what it
+> throws — a thrown `Error` carries the HTTP status plus Salesforce's `error`
+> and `error_description`, and never the request body, URL or headers — so log
+> `error.message`, not the error object you happened to catch.
+
+> `host` must be an absolute `https:` URL. A trailing slash is optional.
+
 ```typescript
 
 import { SF_JWTConnect, JWTParameters } from 'client-sf-oauth';
 
 async function JWTConnect() {
 
-  const JWTParameters: JWTParameters = {
-    secret: './key.pem',
-    clientId: process.env.clientId,
-    username: process.env.username
+  const parameters: JWTParameters = {
+    secret: process.env.privateKeyPath!,
+    clientId: process.env.clientId!,
+    username: process.env.username!
   };
   try {
-    const connection = new SF_JWTConnect(JWTParameters);
-    //console.log(connection);
-    const result = await connection.createJWTAndGetAccessToken('test');
-    console.log(result);
+    const connection = new SF_JWTConnect(parameters);
+    const result = await connection.createJWTAndGetAccessToken(process.env.privateKeyPassphrase);
+    console.log(result.data);
   } catch (ex: any) {
-    console.log(ex);
+    console.error('JWT connect failed:', ex?.message ?? ex);
   }
 }
 
@@ -67,21 +73,20 @@ import { SF_PassConnect, PassParameters } from 'client-sf-oauth';
 
 async function PassConnect() {
 
-  const PassParameters: PassParameters = {
-    clientId: process.env.clientId,
-    secret: process.env.clientSecret,
-    username: process.env.username,
-    password: process.env.password,
-    usertoken: process.env.usertoken,
-    host: process.env.host
+  const parameters: PassParameters = {
+    clientId: process.env.clientId!,
+    clientSecret: process.env.clientSecret!,
+    username: process.env.username!,
+    password: process.env.password!,
+    usertoken: process.env.usertoken!,
+    host: process.env.host!
   };
   try {
-    const connection = new SF_PassConnect(PassParameters);
-    //console.log(connection);
+    const connection = new SF_PassConnect(parameters);
     const result = await connection.requestAccessToken();
-    console.log(result);
+    console.log(result.data);
   } catch (ex: any) {
-    le.log(ex);
+    console.error('Password connect failed:', ex?.message ?? ex);
   }
 }
 
@@ -98,9 +103,9 @@ const sf_oauth = require('client-sf-oauth');
 
 async function getAccessToken() {
 
-    const PassParameters = {
+    const parameters = {
         clientId: process.env.clientId,
-        clientSecret: process.env.secret,
+        clientSecret: process.env.clientSecret,
         username: process.env.username,
         password: process.env.password,
         usertoken: process.env.usertoken,
@@ -108,20 +113,34 @@ async function getAccessToken() {
     };
 
     try {
-        const connection = new sf_oauth.SF_PassConnect(PassParameters);
-        //console.log(connection);
+        const connection = new sf_oauth.SF_PassConnect(parameters);
         const result = await connection.requestAccessToken();
-        console.log(result);
+        console.log(result.data);
     } catch (ex) {
-        console.log(ex);
-
+        console.error('Password connect failed:', ex && ex.message ? ex.message : ex);
     }
-    
+
 }
 
 getAccessToken();
 
 ```
+
+## Errors
+
+Every network call rejects with an `Error` that carries no credential material.
+Useful properties:
+
+| Property | Meaning |
+|---|---|
+| `message` | Human-readable summary, safe to log |
+| `status` | HTTP status, when Salesforce responded |
+| `error` | Salesforce's `error` field, e.g. `invalid_grant` |
+| `errorDescription` | Salesforce's `error_description` field |
+| `code` | Transport code when no response arrived, e.g. `ECONNREFUSED` |
+
+Invalid constructor input throws before any network or filesystem access. The
+message names the offending parameter and never echoes its value.
 
 ## Project Status
 

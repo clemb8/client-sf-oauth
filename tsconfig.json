@@ -11,6 +11,6 @@
     "skipLibCheck": true,
   },
 
-  "include": ["./src", "examples/query/exampleQuery.ts"],
-  "exclude": ["./src/test"]
+  "include": ["./src"],
+  "exclude": ["./src/test", "./src/__tests__"]
 }

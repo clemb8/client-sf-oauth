@@ -1,5 +1,11 @@
 src
 tsconfig.json
-tslint.json
+eslint.config.mjs
+vitest.config.mts
+.vitest/
 docs/
 examples/
+
+# Development workspace — never part of the published package.
+.claude/
+aidlc/

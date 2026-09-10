@@ -1,5 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import { PassParameters } from "./interfaces/PassParameters";
+import { optionalString, requireHttpsUrl, requireNonEmptyString } from "./validation";
+import { redactTransportError } from "./errors";
+import { joinUrl } from "./url";
 
 export default class UsernamePassword {
 
@@ -8,24 +11,48 @@ export default class UsernamePassword {
   private grantType: string = 'password';
 
   constructor(parameters: PassParameters) {
-    this.parameters = parameters;
+    if (typeof parameters !== 'object' || parameters === null) {
+      throw new TypeError('client-sf-oauth: parameters object is required.');
+    }
+
+    // Validate before anything else so a bad host can never reach the network.
+    const host = requireHttpsUrl(parameters.host, 'host');
+    const clientId = requireNonEmptyString(parameters.clientId, 'clientId');
+    const clientSecret = requireNonEmptyString(parameters.clientSecret, 'clientSecret');
+    const username = requireNonEmptyString(parameters.username, 'username');
+    const password = requireNonEmptyString(parameters.password, 'password');
+    // The security token is empty for orgs that allowlist the caller's IP range.
+    const usertoken = optionalString(parameters.usertoken, 'usertoken');
+
+    this.parameters = { host, clientId, clientSecret, username, password, usertoken };
   }
 
   public async requestAccessToken(): Promise<AxiosResponse> {
 
-    const body = `${encodeURI('grant_type')}=${encodeURI(this.grantType)}&` +
-    `${encodeURI('client_id')}=${encodeURI(this.parameters.clientId)}&` +
-    `${encodeURI('client_secret')}=${encodeURI(this.parameters.clientSecret)}&` +
-    `${encodeURI('username')}=${encodeURI(this.parameters.username)}&` +
-    `${encodeURI('password')}=${encodeURI(this.parameters.password) + encodeURI(this.parameters.usertoken)}`;
+    // `URLSearchParams` performs correct `application/x-www-form-urlencoded`
+    // escaping. The previous implementation concatenated `encodeURI()` output,
+    // which leaves `&`, `=`, `+`, `?`, `#` and `/` unescaped — a credential
+    // containing any of those injected extra parameters into the token request.
+    const body = new URLSearchParams();
+    body.append('grant_type', this.grantType);
+    body.append('client_id', this.parameters.clientId);
+    body.append('client_secret', this.parameters.clientSecret);
+    body.append('username', this.parameters.username);
+    // Concatenate BEFORE encoding, so the boundary between the two values is
+    // escaped along with the values themselves.
+    body.append('password', `${this.parameters.password}${this.parameters.usertoken}`);
 
     const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
 
-    const endpoint = `${this.parameters.host}${this.service}`;
+    const endpoint = joinUrl(this.parameters.host, this.service);
 
-    const axiosResponse: AxiosResponse = await axios.post(endpoint, body, { headers });
-    return axiosResponse;
+    try {
+      const axiosResponse: AxiosResponse = await axios.post(endpoint, body, { headers });
+      return axiosResponse;
+    } catch (cause) {
+      // Never let the raw rejection out: it carries the form body on `config`.
+      throw redactTransportError(cause, 'password grant token request');
+    }
   }
-
 
 }

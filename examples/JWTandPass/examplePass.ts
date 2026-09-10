@@ -12,11 +12,13 @@ async function PassConnect() {
   };
   try {
     const connection = new SF_PassConnect(PassParameters);
-    //console.log(connection);
     const result = await connection.requestAccessToken();
-    console.log(result);
+    console.log(result.data);
   } catch (ex: any) {
-    console.log(ex);
+    // Never log the raw error: an axios rejection carries the form body and
+    // therefore the password. The library already redacts what it throws, so
+    // print only the message.
+    console.error('Password connect failed:', ex?.message ?? ex);
   }
 }
 
