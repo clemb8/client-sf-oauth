@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "client-sf-oauth": "^0.5.4",
+    "client-sf-oauth": "^0.7.0",
     "typescript": "^5.9.3"
   }
 }
