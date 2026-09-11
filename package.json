@@ -16,12 +16,13 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
     "prebuild": "eslint src",
-    "generate-changelog": "npx github-changes -n ${npm_package_version} --use-commit-body -o clemb8 -r client-sf-oauth -b main",
     "build": "tsc",
     "lint": "eslint src",
     "test": "vitest run",
-    "version": "npm run generate-changelog && git add CHANGELOG.md",
-    "postversion": "git push && git push --tags"
+    "test:e2e": "vitest run --config vitest.e2e.config.mts",
+    "typecheck:e2e": "tsc -p e2e/tsconfig.json",
+    "version": "git add CHANGELOG.md",
+    "postversion": "echo 'Tagged locally. Review, then push: git push && git push --tags'"
   },
   "author": "clemb8",
   "license": "ISC",

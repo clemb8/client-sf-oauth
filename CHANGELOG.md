@@ -1,5 +1,151 @@
 ## Change Log
 
+<!-- Hand-maintained. Add the entry for the next release BEFORE running
+     `npm version`; its `version` hook stages this file into the release
+     commit. Nothing regenerates this file, so nothing overwrites it. -->
+
+### v0.7.0 (2026/09/10)
+
+Security release. Clears every known dependency advisory and fixes five
+code-level defects that could expose a Salesforce credential. Adds PKCE to the
+Web Server flow, which was previously unusable on a default modern Connected
+App. No constructor or method signature changed, but **error handling and
+input validation changed observably** — read "Action required" before
+upgrading.
+
+#### Added
+
+- **PKCE (RFC 7636) on the Web Server flow.** `SF_WebAppConnect` now generates
+  a `code_verifier` / `code_challenge` pair and sends an `S256` challenge on
+  the authorize request and the verifier on the token exchange.
+
+  This is a **functional fix, not only hardening**. Salesforce requires PKCE by
+  default on Connected Apps created since Winter '23 and rejects the authorize
+  request outright with `missing required code challenge`. Before this release
+  the flow could not complete against such an app at all: the library forwarded
+  a caller-supplied `code_challenge` but never sent a verifier.
+
+  In a web application the authorize redirect and the callback are different
+  HTTP requests, so read the verifier and persist it with the user's session:
+
+  ```ts
+  const client = new SF_WebAppConnect({ clientId, clientSecret, host, redirectURI });
+  const url = await client.requestAuthCode();
+  req.session.codeVerifier = client.codeVerifier;   // treat as a credential
+
+  // ...in the callback request:
+  await client.requestAccessTokenWithCode(code, req.session.codeVerifier);
+  ```
+
+  A single long-lived instance needs no change — the verifier is reused
+  automatically. `code_verifier`, `code_challenge` and `code_challenge_method`
+  are also accepted as constructor parameters if you manage your own pair.
+  `requestAccessTokenWithCode` gained an optional second argument; the existing
+  one-argument call still compiles.
+
+#### Deprecated
+
+- **`SF_PassConnect` (Username-Password flow).** Salesforce is retiring this
+  grant: it is disabled by default on new orgs, and on many orgs the
+  *Allow OAuth Username-Password Flows* setting no longer exists, so it cannot
+  be enabled by any configuration. It is also the weakest of the three — it
+  transmits a password and security token on every call and cannot support
+  multi-factor authentication.
+
+  Prefer `SF_JWTConnect` for server-to-server work, or `SF_WebAppConnect` when
+  a user is present. The class is marked `@deprecated`, so editors will flag
+  it, but it still works where an org permits the grant, carries the same
+  security fixes as the other flows, and is **not scheduled for removal from
+  this library**.
+
+`v0.6.0` was tagged during this release cycle but never published to npm; its
+code is identical to `v0.7.0`.
+
+#### Action required
+
+- **Thrown errors are now redacted.** Network failures previously propagated the
+  raw `axios` rejection, whose `config` carried the request body, URL and
+  headers — and therefore the client secret, password or assertion. They now
+  reject with an `Error` built only from safe fields. Code reading
+  `ex.response.status` must move to `ex.status`.
+
+  | Property | Meaning |
+  |---|---|
+  | `message` | Human-readable summary, safe to log |
+  | `status` | HTTP status, when Salesforce responded |
+  | `error` | Salesforce's `error` field, e.g. `invalid_grant` |
+  | `errorDescription` | Salesforce's `error_description` field |
+  | `code` | Transport code when no response arrived, e.g. `ECONNREFUSED` |
+
+  The original rejection is deliberately not attached as `cause`, so a
+  structured logger cannot reach `config` through it.
+
+- **Constructors now validate and throw.** `host` must be a syntactically valid
+  absolute `https:` URL; `clientId`, `clientSecret`, `username`, `password`,
+  `redirectURI` and `secret` must be present and non-empty. Input that was
+  previously accepted — a `http:` host, an empty secret, a missing field — now
+  throws before any network or filesystem access. Error messages name the
+  offending parameter and never echo its value.
+
+- **`host` no longer depends on a trailing slash.** The two flows previously
+  disagreed: the password flow required a trailing slash and the Web App flow
+  required its absence. Both forms now produce the same endpoint.
+
+#### Security fixes
+
+- **Password grant no longer corrupts or leaks credentials.** The
+  `application/x-www-form-urlencoded` body was concatenated from `encodeURI()`
+  output, which does not escape `&`, `=`, `+`, `?`, `#` or `/`. A credential
+  containing any of those broke the request or **injected additional parameters
+  into the token request**. Now built with `URLSearchParams`. `password` and
+  `usertoken` are concatenated before encoding, so the boundary between them is
+  escaped too.
+- **The client secret is no longer put in a URL.** The authorization-code token
+  exchange sent `client_secret`, `code` and `redirect_uri` in the query string
+  of a POST with an empty body, leaking the Connected App secret into every
+  access log, proxy log and referrer on the path. They now travel in a
+  form-encoded request body.
+- **Authorize-URL values are percent-encoded.** `clientId`, `redirectURI` and
+  every extra `WebAuthCodeParameters` field were interpolated raw, so a value
+  containing `&` or `=` could append or overwrite authorize parameters.
+- **An unvalidated `host` can no longer redirect a credential.** `host` was
+  concatenated raw into the endpoint that receives the credential.
+- **The JWT key read is guarded.** `fs.readFileSync` ran on a caller-supplied
+  path with no existence check and no `try`/`catch`. The path is now validated
+  first, and read failures throw an error that names the parameter without
+  echoing it — the same parameter carries key material when `secretText` is set.
+- **Committed key material removed.** `examples/JWTandPass/key.pem` and
+  `cert.pem` are deleted and untracked, and `*.pem` is now gitignored. The pair
+  was a throwaway demo key never registered against a real Connected App, so no
+  rotation was required. It never reached the npm tarball; only git clones.
+- **The docs no longer teach the leak.** Every `console.log(ex)` in `README.md`
+  and the examples printed the full rejection, credentials included. The
+  examples' hardcoded `'test'` passphrase is now an environment variable.
+
+#### Dependencies
+
+`npm audit` goes from 8 vulnerabilities (1 low, 1 moderate, 6 high) to **0**,
+across production and development. The three example packages also report 0.
+
+- `axios` -> `^1.20.0` (clears its advisory range and drops `follow-redirects`)
+- `jsonwebtoken` -> `^9.0.3`, resolving `jws` to `>= 3.2.3`
+- `form-data` resolves to 4.0.6 transitively, outside the vulnerable range
+- `@types/node` moved from `dependencies` to `devDependencies`; it is types-only
+  and was inflating every consumer install
+- `tslint` removed (deprecated, and the sole root of 4 of the 8 advisories),
+  replaced by ESLint 10 with typescript-eslint 8
+- `typescript` -> `^5.9.3`
+
+#### Build and tests
+
+- **`npm install` no longer rewrites your working copy.** `prebuild` ran
+  `tslint --fix`, so every install, pack and publish mutated files under `src/`.
+  It now runs ESLint without `--fix`.
+- A test suite exists for the first time: Vitest, 13 tests, no network access and
+  no credentials required. `npm test` runs it instead of the failing stub.
+- The published tarball is now `dist/` plus documentation only — the development
+  workspace, examples and test files are excluded.
+
 ### v0.5.4 (2025/08/21 07:30 +00:00)
 - [7e62656](https://github.com/clemb8/client-sf-oauth/commit/7e626562366536e91db8acd212e149e0b1766729) 0.5.4 (@clemb8)
 - [e99ac71](https://github.com/clemb8/client-sf-oauth/commit/e99ac718a33c1ff662a4fe453db9f2c81add5e1f) Patch Dependencies (@clemb8)

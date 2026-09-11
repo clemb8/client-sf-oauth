@@ -4,6 +4,31 @@ import { optionalString, requireHttpsUrl, requireNonEmptyString } from "./valida
 import { redactTransportError } from "./errors";
 import { joinUrl } from "./url";
 
+/**
+ * Salesforce OAuth 2.0 Username-Password flow.
+ *
+ * @deprecated Salesforce is retiring this grant. It is **disabled by default**
+ * on new orgs, and on many orgs the "Allow OAuth Username-Password Flows"
+ * setting no longer exists at all — so this flow cannot be enabled there by
+ * any configuration.
+ *
+ * It is also the weakest of the three: it sends a user's password and security
+ * token to the token endpoint on every call, it cannot support multi-factor
+ * authentication, and it gives the client application a long-lived copy of a
+ * human credential rather than a scoped token.
+ *
+ * Use instead:
+ * - {@link JWT} (`SF_JWTConnect`) for server-to-server integrations — a
+ *   certificate replaces the password entirely;
+ * - {@link WebApp} (`SF_WebAppConnect`) when a human is present — the user
+ *   authenticates with Salesforce directly and your application never sees
+ *   their password.
+ *
+ * This class remains functional and supported for orgs that still permit the
+ * grant, and it carries the same security fixes as the other two flows. It is
+ * not scheduled for removal from this library; the deprecation reflects
+ * Salesforce's own direction, not an intent to drop it.
+ */
 export default class UsernamePassword {
 
   private parameters: PassParameters;

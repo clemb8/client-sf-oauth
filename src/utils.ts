@@ -10,7 +10,15 @@
  * @returns            a new endpoint string; `endpoint` is not mutated
  */
 export function includeParametersQuery<T extends object>(configInput: T, endpoint: string): string {
-  const excludedKeys = ['clientId', 'clientSecret', 'host', 'redirectURI'];
+  const excludedKeys = [
+    'clientId', 'clientSecret', 'host', 'redirectURI',
+    // PKCE. `code_verifier` is the secret half of the exchange and must NEVER
+    // appear in the authorize URL — putting it there would hand an interceptor
+    // the very value PKCE exists to withhold. The challenge and its method are
+    // excluded because the caller writes them into the query string directly;
+    // forwarding them here as well would duplicate the parameter.
+    'code_verifier', 'code_challenge', 'code_challenge_method',
+  ];
 
   const pairs = Object.entries(configInput)
     .filter(([key, value]) =>

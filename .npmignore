@@ -9,3 +9,12 @@ examples/
 # Development workspace — never part of the published package.
 .claude/
 aidlc/
+e2e/
+vitest.e2e.config.mts
+
+# Credentials and key material. .npmignore REPLACES .gitignore for packing,
+# so a file being gitignored does NOT keep it out of the tarball.
+.env
+.env.*
+*.pem
+*.key

@@ -1,0 +1,23 @@
+{
+  // The E2E suite is not part of the published build — the root tsconfig
+  // compiles ./src to ./dist and deliberately excludes everything else. These
+  // files still need type checking, so they get their own config rather than
+  // relying on ad-hoc `tsc` flags that drift from what the runner actually does.
+  //
+  // Run via `npm run typecheck:e2e`.
+  "compilerOptions": {
+    // ES2022 for `new Error(message, { cause })`, which the diagnostics use.
+    // Vitest runs on Node 20+, so this is available at runtime.
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node", "vitest/globals"],
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["./**/*.ts", "../vitest.e2e.config.mts"]
+}

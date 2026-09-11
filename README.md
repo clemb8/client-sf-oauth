@@ -27,8 +27,27 @@ List the ready features here:
 
 - Easily get Salesforce API credentials through :
   - Oauth JWT Flow;
-  - Oauth Username/Password Flow ;
-  - Oauth Web App integration Flow ;
+  - Oauth Username/Password Flow — **deprecated**, see below;
+  - Oauth Web App integration Flow (with PKCE);
+
+### Deprecated: the Username/Password flow
+
+**Salesforce is retiring this grant.** It is disabled by default on new orgs,
+and on many orgs the *Allow OAuth Username-Password Flows* setting no longer
+exists at all — so it cannot be enabled there by any configuration.
+
+It is also the weakest of the three: it sends a user's password and security
+token on every call, it cannot support multi-factor authentication, and it
+leaves your application holding a human credential rather than a scoped token.
+
+| If you are | Use |
+|---|---|
+| A backend service or scheduled job | **`SF_JWTConnect`** — a certificate replaces the password entirely |
+| A web application with a user present | **`SF_WebAppConnect`** — the user authenticates with Salesforce directly and your app never sees their password |
+
+`SF_PassConnect` still works where an org permits the grant, carries the same
+security fixes as the other two flows, and is **not scheduled for removal from
+this library**. The deprecation reflects Salesforce's direction, not ours.
 
 ## Usage
 
@@ -66,6 +85,10 @@ async function JWTConnect() {
 JWTConnect();
 
 ```
+
+**Deprecated — see [Deprecated: the Username/Password flow](#deprecated-the-usernamepassword-flow).**
+Prefer `SF_JWTConnect` for server-to-server work, or `SF_WebAppConnect` when a
+user is present.
 
 ```typescript
 
