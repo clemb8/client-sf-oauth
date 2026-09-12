@@ -132,18 +132,26 @@ a bad code fails safely.
 
 To exercise the full round trip once, by hand:
 
-1. Run the suite; the first test prints nothing, but you can build the URL
-   yourself:
+1. Let the library build the authorize URL, because every authorize request
+   it sends carries a PKCE `S256` challenge and the code you get back can only
+   be redeemed with the matching verifier. With your `.env` filled in
+   (`dist/` exists after `npm ci`):
    ```
-   https://login.salesforce.com/services/oauth2/authorize?client_id=<SF_WEB_CLIENT_ID>&redirect_uri=<SF_WEB_REDIRECT_URI>&response_type=code
+   node --env-file=.env -e "
+   const { SF_WebAppConnect } = require('./dist');
+   const client = new SF_WebAppConnect({ host: process.env.SF_WEB_HOST, clientId: process.env.SF_WEB_CLIENT_ID, clientSecret: process.env.SF_WEB_CLIENT_SECRET, redirectURI: process.env.SF_WEB_REDIRECT_URI });
+   client.requestAuthCode().then((url) => { console.log('Open:', url); console.log('SF_WEB_CODE_VERIFIER=' + client.codeVerifier); });
+   "
    ```
-2. Open it, log in, approve.
+2. Open the printed URL, log in, approve.
 3. You land on your redirect URI with `?code=...` in the query string. Copy
    that value.
-4. Put it in `SF_WEB_AUTH_CODE` and re-run within ~15 minutes.
+4. Put it in `SF_WEB_AUTH_CODE`, put the printed verifier in
+   `SF_WEB_CODE_VERIFIER`, and re-run within ~15 minutes.
 
 The code is single-use. Re-running the test again with the same value will
-correctly fail with `invalid_grant`.
+correctly fail with `invalid_grant`. The verifier is a secret for as long as
+the code is valid: clear both variables afterwards.
 
 ## Safety notes
 

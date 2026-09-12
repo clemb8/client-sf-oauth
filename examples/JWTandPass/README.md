@@ -1,5 +1,10 @@
 # JWT and Username/Password examples
 
+These two TypeScript scripts demonstrate **`SF_JWTConnect`** (the JWT bearer
+flow, `exampleJWT.ts`) and the deprecated **`SF_PassConnect`** (the
+username-password flow, `examplePass.ts`). Flow selection and the full API
+reference are in the root [README](../../README.md#which-flow).
+
 Neither example ships credentials, and **no key material is committed to this
 repository** — `*.pem` is gitignored. Generate your own pair before running.
 

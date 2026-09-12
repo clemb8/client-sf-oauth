@@ -1,0 +1,66 @@
+# client-sf-oauth
+
+> Get a Salesforce access token from Node.js with OAuth 2.0 — JWT bearer, web-server (authorization code) with PKCE, or username-password — in TypeScript with typed parameters. The package obtains the token; it does not call the Salesforce data APIs, refresh tokens, or manage sessions. It moves credentials, so every constructor validates before I/O, hosts must be `https:`, secrets travel only in request bodies, and thrown errors are redacted.
+
+## Purpose and flow selection
+
+- Use `SF_JWTConnect` for a backend service, scheduled job, CLI, or integration with no user present: a certificate registered on the Connected App replaces any password (grant `urn:ietf:params:oauth:grant-type:jwt-bearer`).
+- Use `SF_WebAppConnect` when a user logs in through a browser: the web server (authorization code) flow with PKCE `S256`, which Salesforce requires by default on Connected Apps created since Winter '23. The authorize step and the callback are two HTTP requests; persist `codeVerifier` and `state` per user session between them.
+- `SF_PassConnect` (username-password grant) is deprecated: Salesforce is retiring the grant and it is disabled on new orgs. It remains functional and is not scheduled for removal from the library.
+
+## Install and runtime
+
+- `npm install client-sf-oauth`
+- Node.js `>=20`. CommonJS build (`main: dist/index.js`) with bundled declarations (`types: dist/index.d.ts`). No `exports` map, no ESM build.
+- Named imports work from TypeScript compiled to CommonJS (`import { SF_JWTConnect } from 'client-sf-oauth'`) and from CommonJS JavaScript (`const { SF_JWTConnect } = require('client-sf-oauth')`). From native ESM (`.mjs` or `"type": "module"`) use the default export and destructure it: `import pkg from 'client-sf-oauth'; const { SF_JWTConnect } = pkg;` — named ESM imports fail in 0.7.x (`Named export 'SF_JWTConnect' not found`) because the package is CommonJS-only with no `exports` map.
+- Runtime dependencies: `axios`, `jsonwebtoken`.
+
+## Exports
+
+The entry point exports exactly seven names. Signatures as emitted in `dist/index.d.ts` for 0.7.x:
+
+```text
+class SF_JWTConnect
+  constructor(parameters: JWTParameters)
+  createJWT(passphrase?: string): string
+  requestAccessToken(jwt: string): Promise<AxiosResponse>
+  createJWTAndGetAccessToken(passphrase?: string): Promise<AxiosResponse>
+
+class SF_WebAppConnect
+  constructor(parameters: WebAuthCodeParameters)
+  get codeVerifier(): string | undefined
+  requestAuthCode(): Promise<string>                      // resolves to the URL to redirect the user's browser to
+  requestAccessTokenWithCode(code: string, codeVerifier?: string): Promise<AxiosResponse>
+
+class SF_PassConnect  (@deprecated)
+  constructor(parameters: PassParameters)
+  requestAccessToken(): Promise<AxiosResponse>
+
+interface JWTParameters        { clientId: string; username: string; secret: string; secretText?: boolean; expiration?: number; environment?: string }
+interface WebAppParameters     { clientId: string; clientSecret: string; host: string; redirectURI: string }
+interface WebAuthCodeParameters extends WebAppParameters { scope?: string; state?: string; immediate?: boolean; code_challenge?: string; code_challenge_method?: string; code_verifier?: string; display?: string; login_hint?: string; nonce?: string; prompt?: string }
+interface PassParameters       { clientId: string; clientSecret: string; username: string; password: string; usertoken: string; host: string }
+```
+
+- `JWTParameters.secret` is a path to the PEM private key, or the key text itself when `secretText: true`. `expiration` is epoch seconds (default now + 3600). `environment: 'dev'` targets `https://test.salesforce.com`; otherwise `https://login.salesforce.com`.
+- Every token method resolves to the `AxiosResponse` of `services/oauth2/token`. The Salesforce JSON is `response.data` (typed `any` in 0.7.x) with `access_token`, `instance_url`, `id`, `token_type`, `issued_at`, `signature`, and `scope`. Never log `response.data` whole.
+- Minimal JWT bearer use: `new SF_JWTConnect({ clientId, username, secret })` then `await client.createJWTAndGetAccessToken(passphrase?)`.
+- Minimal web server use: request 1 — `const client = new SF_WebAppConnect({ host, clientId, clientSecret, redirectURI, state }); const redirectTo = await client.requestAuthCode(); save { state, codeVerifier: client.codeVerifier } in the user's session`. Request 2 — verify `query.state` equals the saved `state` and delete it (single use), then `await new SF_WebAppConnect({ host, clientId, clientSecret, redirectURI }).requestAccessTokenWithCode(query.code, savedCodeVerifier)`.
+
+## Error contract
+
+- Every thrown message starts with `client-sf-oauth:`. No error carries the request body, URL, headers, or a `cause`.
+- Network failures throw an `Error` with `status?: number`, `error?: string` (Salesforce `error`, e.g. `invalid_grant`), `errorDescription?: string`, and `code?: string` (transport code such as `ECONNREFUSED`).
+- Invalid constructor input throws before any network or filesystem access with `field: string` naming the parameter; the value is never echoed. A non-object `parameters` argument or a malformed PKCE verifier throws a `TypeError`.
+- The classes `OAuthRequestError` and `InvalidParameterError` are not exported from the entry point in 0.7.x: match on `message.startsWith('client-sf-oauth:')` and the properties above, not on `instanceof`.
+- Log `error.message` only; never the error object.
+
+## Links
+
+- [README](https://raw.githubusercontent.com/clemb8/client-sf-oauth/main/README.md): install, flow selection, copy-pasteable quick starts, full API reference with parameter tables, token response fields, error contract.
+- [AGENTS.md](https://raw.githubusercontent.com/clemb8/client-sf-oauth/main/AGENTS.md): imperative wiring rules for coding agents consuming this package.
+- [CHANGELOG](https://raw.githubusercontent.com/clemb8/client-sf-oauth/main/CHANGELOG.md): release notes; the 0.7.0 entry documents PKCE, error redaction, and constructor validation.
+- [Example: JWT bearer and password scripts (TypeScript)](https://raw.githubusercontent.com/clemb8/client-sf-oauth/main/examples/JWTandPass/exampleJWT.ts): `examples/JWTandPass`.
+- [Example: Express 5 web server flow with PKCE and state](https://raw.githubusercontent.com/clemb8/client-sf-oauth/main/examples/WebApp/index.ts): `examples/WebApp`, per-request PKCE pair and single-use `state`.
+- [Example: password flow in plain JavaScript](https://raw.githubusercontent.com/clemb8/client-sf-oauth/main/examples/js/pass/index.js): `examples/js/pass`.
+- [Salesforce OAuth documentation](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5): Authorize Apps with OAuth.

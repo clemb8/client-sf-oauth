@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>client-sf-oauth — web server flow example</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; }
+      a.button { display: inline-block; padding: 0.6rem 1.2rem; border: 1px solid #333; border-radius: 4px; text-decoration: none; color: inherit; }
+    </style>
+  </head>
+  <body>
+    <h1>client-sf-oauth — web server flow</h1>
+    <p>
+      This page is a static landing page for the example in <code>index.ts</code>.
+      Start the app (see <code>README.md</code>) and open <a href="http://localhost:3000/">http://localhost:3000/</a>;
+      the app redirects to <code>/oauth</code>, which builds the authorize URL with a PKCE challenge and a
+      single-use <code>state</code>, then sends your browser to Salesforce.
+    </p>
+    <p><a class="button" href="/oauth">Log in with Salesforce</a></p>
+    <p>
+      After you approve, Salesforce redirects to <code>/getAccessToken?code=…&amp;state=…</code>, where the app
+      checks the <code>state</code> and redeems the code with the stored PKCE verifier.
+    </p>
+  </body>
+</html>

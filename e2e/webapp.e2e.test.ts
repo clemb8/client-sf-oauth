@@ -19,6 +19,7 @@
 import { describe, expect, it } from 'vitest';
 import axios from 'axios';
 import { SF_WebAppConnect } from '../src/index';
+import { createPkcePair } from '../src/pkce';
 import { env, hasEnv, optionalEnv, skipReason } from './helpers/env';
 import { expectNoCredentialLeak, expectRedactedOAuthError, expectTokenResponse } from './helpers/assertions';
 import { fetchUserInfo, revokeToken } from './helpers/salesforce';
@@ -41,28 +42,29 @@ describe.skipIf(!run)(`Web Server flow [${run ? 'live' : skipReason('webapp')}]`
    *
    * The authorize endpoint answers with an HTML error page rather than JSON,
    * so the library's redacted error carries a bare `HTTP 400` and no
-   * description. Without this, a PKCE-required Connected App looks like an
-   * unexplained failure rather than the known limitation it is.
+   * description. This probe replays the same shape of request the library
+   * sends — including an `S256` PKCE challenge, which the library has sent on
+   * every authorize request since 0.7.0 — and reads the page for a reason.
    */
   async function diagnoseAuthorizeFailure(): Promise<string> {
     const host = env('SF_WEB_HOST').replace(/\/$/, '');
+    const pkce = createPkcePair();
     const url =
       `${host}/services/oauth2/authorize` +
       `?client_id=${encodeURIComponent(env('SF_WEB_CLIENT_ID'))}` +
       `&redirect_uri=${encodeURIComponent(env('SF_WEB_REDIRECT_URI'))}` +
-      `&response_type=code`;
+      `&response_type=code` +
+      `&code_challenge=${encodeURIComponent(pkce.codeChallenge)}` +
+      `&code_challenge_method=${pkce.codeChallengeMethod}`;
     const probe = await axios.get(url, { maxRedirects: 0, validateStatus: () => true });
     const body = typeof probe.data === 'string' ? probe.data : '';
 
     if (/code[_%20]*challenge/i.test(body)) {
       return (
-        'the Connected App requires PKCE, and this library never sends a code_verifier. ' +
-        'It forwards code_challenge to the authorize call but the token exchange completes ' +
-        'without a verifier, so the flow cannot succeed on a PKCE-required app — which is ' +
-        "Salesforce's default for new Connected Apps. Recorded as SEC-4 in the code " +
-        'knowledge base and deliberately left out of scope for the vulnerability work. ' +
-        'Either implement PKCE, or uncheck "Require Proof Key for Code Exchange (PKCE)" ' +
-        'on the Connected App.'
+        'Salesforce rejected the PKCE challenge. This library sends an S256 code_challenge on ' +
+        'every authorize request and the matching code_verifier on the token exchange, so a ' +
+        'challenge complaint means the Connected App does not accept the S256 method or its ' +
+        'OAuth settings have not finished propagating (allow a few minutes after saving).'
       );
     }
     if (/redirect_uri_mismatch/i.test(body)) {
@@ -158,11 +160,15 @@ describe.skipIf(!run)(`Web Server flow [${run ? 'live' : skipReason('webapp')}]`
   // ---------------------------------------------------------------------
 
   const manualCode = optionalEnv('SF_WEB_AUTH_CODE');
+  // The code was minted against a PKCE challenge, so it can only be redeemed
+  // with the verifier that produced that challenge. See e2e/README.md for how
+  // to obtain the pair.
+  const manualVerifier = optionalEnv('SF_WEB_CODE_VERIFIER');
 
   it.skipIf(!manualCode)(
     'exchanges a real authorization code for a working token [manual: SF_WEB_AUTH_CODE]',
     async () => {
-      const response = await connect().requestAccessTokenWithCode(manualCode as string);
+      const response = await connect().requestAccessTokenWithCode(manualCode as string, manualVerifier);
 
       expect(response.status).toBe(200);
       const { access_token, instance_url } = expectTokenResponse(response.data);

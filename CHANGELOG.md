@@ -4,6 +4,69 @@
      `npm version`; its `version` hook stages this file into the release
      commit. Nothing regenerates this file, so nothing overwrites it. -->
 
+### v0.7.1 (2026/09/11)
+
+Metadata and documentation release. **No runtime code changed**: `src/` and
+the compiled `dist/` are identical to 0.7.0. The package is now described
+accurately on npm and GitHub, ships guidance for AI coding assistants, and
+carries the licence it was always distributed under.
+
+#### Changed
+
+- **License is `MIT`.** `package.json` declared `ISC` while `License.txt` has
+  always carried the MIT text, so npm and GitHub disagreed. The field now says
+  `MIT` and the copyright line reads `Copyright (c) 2022-2026 clemb8`.
+- **`package.json` metadata.** `description` names Salesforce, OAuth 2.0, JWT
+  bearer, the web server flow with PKCE, and TypeScript; `keywords` is a
+  lower-case list covering the mechanisms the library implements (`oauth2`,
+  `jwt-bearer`, `pkce`, `authorization-code`, `connected-app`, `sfdc`, ...);
+  `homepage`, `bugs`, `types` (`./dist/index.d.ts`), `sideEffects: false`,
+  and the canonical `repository.url` are declared explicitly.
+- **`engines.node` is `>=20`.** The library already required a modern Node
+  (`node:crypto` base64url, `URLSearchParams`); the floor is now stated. npm
+  prints an engine warning on Node 18 but still installs unless
+  `engine-strict` is set. No `exports` map, `module`, `type`, or `files` field
+  was added: the CommonJS build and the `.npmignore`-driven tarball are
+  unchanged.
+- **README rewritten** for the npm page: install line, flow-selection table,
+  a complete quick start per flow (including the two-request web server
+  pattern with `state` and a persisted PKCE verifier), a full API reference
+  with parameter tables, the token response fields, the error contract, and
+  links to the examples, security policy, and contributing guide.
+
+#### Added
+
+- `llms.txt` and `AGENTS.md`, both shipped in the package: a machine-readable
+  summary of the exports, error contract, and flow selection, and imperative
+  wiring rules for coding agents that consume the package.
+- `SECURITY.md` (supported versions, private reporting, the library's
+  credential-handling guarantees) and `CONTRIBUTING.md` (prerequisites,
+  scripts, tests, release procedure).
+- A README for every example (`examples/WebApp`, `examples/js/pass`) and a
+  landing page for the web application example.
+- Two unit test files that guard this release: `package-metadata.test.ts`
+  asserts the metadata and documentation requirements above, and
+  `docs-samples.test.ts` type-checks every TypeScript sample in `README.md`,
+  `llms.txt`, and `AGENTS.md` against the library's declarations. The unit
+  suite grows from 19 to 41 tests.
+
+#### Fixed
+
+- The end-to-end diagnostics and `e2e/README.md` still described the
+  pre-0.7.0 behaviour (no verifier sent, an authorize URL without PKCE). The
+  probe now replays the `S256` challenge the library sends, and the manual
+  round trip documents how to obtain the code and its verifier together
+  (`SF_WEB_CODE_VERIFIER`).
+- The v0.7.0 entry below said the suite had 13 tests; it had 19.
+- The first draft of this release's README and `llms.txt` claimed that
+  `import { SF_JWTConnect } from 'client-sf-oauth'` works from native ESM. It
+  does not: Node's CommonJS export lexer does not detect the getter-style
+  re-exports `tsc` emits, so a named import fails with
+  `Named export 'SF_JWTConnect' not found`. The Install guidance now shows the
+  three shapes that work — named imports from TypeScript compiled to CommonJS,
+  `require` from CommonJS, and default import + destructure from native ESM —
+  and a unit test exercises the ESM shape against `dist/index.js`.
+
 ### v0.7.0 (2026/09/10)
 
 Security release. Clears every known dependency advisory and fixes five
@@ -141,7 +204,7 @@ across production and development. The three example packages also report 0.
 - **`npm install` no longer rewrites your working copy.** `prebuild` ran
   `tslint --fix`, so every install, pack and publish mutated files under `src/`.
   It now runs ESLint without `--fix`.
-- A test suite exists for the first time: Vitest, 13 tests, no network access and
+- A test suite exists for the first time: Vitest, 19 tests, no network access and
   no credentials required. `npm test` runs it instead of the failing stub.
 - The published tarball is now `dist/` plus documentation only — the development
   workspace, examples and test files are excluded.
