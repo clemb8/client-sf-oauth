@@ -1,6 +1,6 @@
 {
   "name": "client-sf-oauth",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Get a Salesforce access token from Node.js with OAuth 2.0 — JWT bearer, web-server (authorization code) with PKCE, or username-password — in TypeScript with typed parameters.",
   "keywords": [
     "salesforce",
